@@ -47,10 +47,10 @@ class SelectService(StateProcessorClass):
         session = Session()
         try:
             services = session.query(Service).filter_by(age_category=self.callback)
-            buttons = {}
+            inline_buttons = {}
             for service in services:
-                buttons[service.id] = service.name
-            return buttons
+                inline_buttons[service.id] = service.name
+            return inline_buttons
         except Exception as e:
             logger.error(e)
             self.text_message = "Ошибка!"
@@ -68,13 +68,16 @@ class ShowService(StateProcessorClass):
         if (
             self.callback is not None and self.callback.isdigit()
         ):  # 'NoneType' object has no attribute 'isdigit'
+
             return True
         return False
 
     def business_logic(self):
+
         session = Session()
         try:
-            self.service = session.query(Service).get(self.callback)
+            service_id = self.callback
+            self.service = session.query(Service).get(service_id)
         except:
             raise ValidationException
         finally:
@@ -87,8 +90,10 @@ class ShowService(StateProcessorClass):
     def get_inline_buttons(self):
         if self.service.is_link:
             inline_buttons = {
-                "link": {"text": "перейти по ссылке", "url": self.service.link}
+                "link": {"text": "перейти по ссылке", "url": self.service.link},
+                "menu": "Вернуться в меню"
             }
+            self.next_state = "@menu"
         else:
             inline_buttons = {f"appoint__{self.callback}": "записаться"}
         return inline_buttons
@@ -97,11 +102,10 @@ class ShowService(StateProcessorClass):
 class WhatIsName(StateProcessorClass):
     text_message = "Как Вас зовут?"
 
-    invalid_message = 'Чтобы записаться нажмите на кнопку"записаться", чтобы вернуться в начало нажмите /start'
+    invalid_message = 'Чтобы записаться нажмите на кнопку"записаться", чтобы вернуться в начало нажмите /menu'
 
     def is_valid(self):
         pattern = r"^appoint__[1-9]\d*$"
-        logger.success(self.callback)
         if self.callback is not None and re.match(pattern, self.callback) is not None:
             return True
         return False
@@ -178,8 +182,12 @@ class Agreement(StateProcessorClass):
 
 
 class Appoint(StateProcessorClass):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.next_state = "@menu"
+
     invalid_message = (
-        "Чтобы записаться дайте согласие, чтобы вернуться в начало нажмите /start"
+        "Чтобы записаться дайте согласие, чтобы вернуться в начало нажмите /menu"
     )
 
     def is_valid(self):
@@ -207,7 +215,9 @@ class Appoint(StateProcessorClass):
             session.commit()
         except Exception as e:
             logger.error(e)
+        finally:
             self.redirect_class = Menu
+            self.redirect_next_state = "@menu"
 
 
 class UserServices(DialogClass):

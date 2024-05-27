@@ -5,7 +5,7 @@ from sqlalchemy import (Boolean, Column, Date, Enum, ForeignKey, Integer,
                         String, create_engine)
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
-from config import BASE_NAME
+from config import BASE_NAME, ADMINS
 
 Base = declarative_base()
 engine = create_engine(BASE_NAME, echo=True)
@@ -49,6 +49,26 @@ class User(Base):
     user_id = Column(Integer, nullable=False)
     state = Column(String, nullable=False)
 
+    @staticmethod
+    def create_user(user_id):
+        engine = create_engine(BASE_NAME, echo=True)
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        user = session.query(User).filter_by(user_id=user_id).first()
+        if user_id in ADMINS:
+            initial_state = "admin_services__my_services"
+        else:
+            initial_state = "user_services__menu"
+        if user:
+            user.state = initial_state
+        else:
+            user = User(user_id=user_id, state=initial_state)
+            session.add(user)
+        session.commit()
+        session.close()
+
+    @staticmethod
     def get_or_create_user(user_id):
         try:
             engine = create_engine(BASE_NAME, echo=True)
@@ -67,6 +87,7 @@ class User(Base):
         except Exception as e:
             logger.error(e)
 
+    @staticmethod
     def get_state(user_id):
         try:
             engine = create_engine(BASE_NAME, echo=True)
@@ -79,6 +100,7 @@ class User(Base):
         except Exception as e:
             logger.error(e)
 
+    @staticmethod
     def set_state(user_id, state):
         try:
             engine = create_engine(BASE_NAME, echo=True)

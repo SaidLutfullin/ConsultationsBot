@@ -2,6 +2,7 @@ import json
 
 import telebot
 from loguru import logger
+from telebot.types import BotCommand
 
 from admin_services import AdminServices
 from config import ADMINS, BOT_TOKEN
@@ -17,14 +18,7 @@ dialog_classes_router = {
 
 def routing(user, users_message=None, callback=None, command=None):
 
-    if command == "start":
-        logger.success(user.id)
-        if user.id in ADMINS:
-            state_arguments = ["admin_services", "my_services"]
-        else:
-            state_arguments = ["user_services", "menu"]
-    else:
-        state_arguments = User.get_state(user.id).split("__")
+    state_arguments = User.get_state(user.id).split("__")
 
     context = json.loads(state_arguments[2]) if len(state_arguments) > 2 else {}
     state = state_arguments[1] if len(state_arguments) > 1 else None
@@ -51,14 +45,33 @@ def routing(user, users_message=None, callback=None, command=None):
     ).process_message()
 
 
-@bot.message_handler(commands=["aes"])
-def send_welcome(message):
-    User.set_state(message.from_user.id, "admin_services__my_services")
+def update_commands(user_id):
+    commands = [
+        BotCommand(command="/menu", description="Меню"),
+    ]
+    if user_id in ADMINS:
+        commands.append(BotCommand(command="/admin_menu", description="Меню администратора"))
+    bot.set_my_commands(commands)
 
 
 @bot.message_handler(commands=["start"])
 def send_welcome(message):
-    routing(message.from_user, command="start")
+    update_commands(message.from_user.id)
+    User.create_user(message.from_user.id)
+    routing(message.from_user, command="menu")
+
+
+@bot.message_handler(commands=["menu"])
+def send_welcome(message):
+    User.set_state(message.from_user.id, "user_services__menu")
+    routing(message.from_user, command="menu")
+
+
+@bot.message_handler(commands=["admin_menu"])
+def send_welcome(message):
+    if message.from_user.id in ADMINS:
+        User.set_state(message.from_user.id, "admin_services__my_services")
+        routing(message.from_user, command="menu")
 
 
 @bot.message_handler(func=lambda message: True)

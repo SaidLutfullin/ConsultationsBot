@@ -42,13 +42,13 @@ class MyServices(StateProcessorClass):
 
 
 class SetNameService(StateProcessorClass):  # вход по коллбеку
-    text_message = "Введите название услуги"
+    text_message = "Введите название услуги."
 
 
 class SetDescription(StateProcessorClass):
-    text_message = "Введите описание услуги"
+    text_message = "Введите описание услуги."
 
-    invalid_message = "Ошибка. Введите правильно название услуги"
+    invalid_message = "Ошибка. Введите правильно название услуги."
 
     def is_valid(self):
         if self.callback is not None:
@@ -138,23 +138,25 @@ class WaitingForIsLink(StateProcessorClass):
         self.context["is_link"] = self.is_link
 
         if self.is_link:
-            self.text_message = "Введите ссылку"
+            self.text_message = "Введите ссылку. Внимание! ссылка должна быть валидной, иначе могут возникнуть ошибки."
             self.set_context(self.context)
         else:
             try:
                 self.context["link"] = None
                 save_service(self.context)
-                self.text_message = "Услуга сохранена успешно"
+                self.text_message = "Услуга сохранена успешно."
             except Exception as e:
                 logger.error(e)
-                self.text_message = "Ошибка сохранения услуги"
+                self.text_message = "Ошибка сохранения услуги."
             finally:
                 self.redirect_class = MyServices
+                self.redirect_next_state = "@my_services"
 
 
 class WaitingForLink(StateProcessorClass):
 
     redirect_class = MyServices
+    redirect_next_state = "@my_services"
 
     invalid_message = "Ошибка. Пришлите верную ссылку."
 
@@ -217,8 +219,14 @@ class WaitingForDate(StateProcessorClass):
 
 class SendingStatistics(StateProcessorClass):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.next_state = "@my_services"
+
     text_message = "Теперь вы можете скачать документ."
+
     redirect_class = MyServices
+    redirect_next_state = "@my_services"
 
     invalid_message = "Неверный формат даты. Введите корректную дату."
 
@@ -246,7 +254,7 @@ class SendingStatistics(StateProcessorClass):
                 {
                     "Алиас": appointment.username,
                     "Имя": appointment.client_name,
-                    "Услуга": appointment.service.name,
+                    "Услуга": "Удаленная услуша" if appointment.service is None else appointment.service.name,
                     "Описание проблемы": appointment.problem_description,
                     "Запрос": appointment.request,
                     "Номер телефона": appointment.phone_number,
@@ -313,6 +321,7 @@ class SelectService(StateProcessorClass):
 
 class DeleteService(StateProcessorClass):# вход по колбеку
     redirect_class = MyServices
+    redirect_next_state = "@my_services"
 
     def business_logic(self):
         try:
@@ -403,7 +412,9 @@ class NewWaitingForIsLink(WaitingForIsLink):  # валидатор унасле�
 
 
 class NewWaitingForLink(WaitingForLink):
+
     redirect_class = MyServices
+    redirect_next_state = "@my_services"
 
     def is_valid(self):
         if (
@@ -413,7 +424,6 @@ class NewWaitingForLink(WaitingForLink):
         return False
 
     def business_logic(self):
-
         self.context["is_link"] = True
         if self.callback != "save_previous":
             self.context["link"] = self.users_message

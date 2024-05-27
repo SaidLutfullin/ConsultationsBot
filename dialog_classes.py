@@ -1,7 +1,8 @@
 import json
 
+import loguru
 from telebot import types
-from telebot.types import InlineKeyboardMarkup
+from telebot.types import InlineKeyboardMarkup, ReplyKeyboardRemove
 
 from models import User
 
@@ -31,7 +32,6 @@ class DialogClass:
             next_state = f"@{states_names[next_state_index]}"
         else:
             next_state = None
-
         state_processor = self.states.get(self.state)
         if type(state_processor) != dict:
             dialog_class = state_processor
@@ -140,20 +140,24 @@ class StateProcessorClass:
             return types.ReplyKeyboardRemove()
 
     def send_message(self, user_id=None, message_text=None, keyboard=None):
-        if user_id is not None:
+        if user_id is None:
             user_id = self.user.id
         if message_text is None:
+            message_text = self.get_message_text()
+        if keyboard is None:
             self.bot.send_message(
-                self.user.id,
-                self.get_message_text(),
-                reply_markup=self.get_keyboard(),
+                user_id,
+                message_text,
+                reply_markup=ReplyKeyboardRemove(),
                 parse_mode="HTML",
             )
         else:
             self.bot.send_message(
-                self.user.id, message_text, reply_markup=keyboard, parse_mode="HTML"
+                user_id,
+                message_text,
+                reply_markup=keyboard,
+                parse_mode="HTML",
             )
-
     document = None
 
     def send_document(self, document=None, user_id=None):
@@ -183,7 +187,7 @@ class StateProcessorClass:
     def process(self):
         if self.is_valid():
             self.business_logic()
-            self.send_message()
+            self.send_message(keyboard=self.get_keyboard())
             self.change_user_state()
             if self.document is not None:
                 self.send_document()
