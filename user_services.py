@@ -17,8 +17,8 @@ Session = sessionmaker(bind=engine)
 
 
 class Menu(StateProcessorClass):
-    text_message = "Запишитесь на консультацию"
-    inline_buttons = {"get_consultation": "Получить консультацию"}
+    text_message = """Привет, я бот-помощник Гузель Хаметовой Я помогу тебе записаться на консультацию, чтобы решилась твоя проблема."""
+    inline_buttons = {"get_consultation": "Записаться"}
 
 
 class SelectAgeCategory(StateProcessorClass):

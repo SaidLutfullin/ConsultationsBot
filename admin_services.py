@@ -1,5 +1,6 @@
 from datetime import datetime
 from io import BytesIO
+import re
 
 import pandas as pd
 from loguru import logger
@@ -168,7 +169,12 @@ class WaitingForLink(StateProcessorClass):
 
     def business_logic(self):
         self.context["is_link"] = True
-        self.context["link"] = self.text_message
+        link = re.sub(r'\s+', '', self.users_message)
+        link = re.search(r'.*\..*', link).group()
+        if link:
+            self.context["link"] = link
+        else:
+            raise ValidationException
         try:
             save_service(self.context)
             self.text_message = "Услуга сохранена успешно"
