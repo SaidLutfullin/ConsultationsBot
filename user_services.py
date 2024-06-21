@@ -33,7 +33,7 @@ class SelectAgeCategory(StateProcessorClass):
 
 
 class SelectService(StateProcessorClass):
-    text_message = "Выберите услугу"
+    text_message = "Выберите проблему"
 
     invalid_message = "Похоже, вы не выбрали возрастную категорию. Пожалуйста выберите."
 
@@ -62,7 +62,7 @@ class SelectService(StateProcessorClass):
 
 class ShowService(StateProcessorClass):
 
-    invalid_message = "Ошибка. Пожалуйста, выберите услугу."
+    invalid_message = "Ошибка. Пожалуйста, выберите проблему."
 
     def is_valid(self):
         if (
