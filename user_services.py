@@ -17,12 +17,20 @@ Session = sessionmaker(bind=engine)
 
 
 class Menu(StateProcessorClass):
-    text_message = """Привет, я бот-помощник Гузель Хаметовой Я помогу тебе записаться на консультацию, чтобы решилась твоя проблема."""
-    inline_buttons = {"get_consultation": "Записаться"}
+    text_message = """Здравствуйте!
+Вы присоединились к боту помощнику Гузель Хаметовой.
+
+Я помогу вам записаться на консультацию или приобрести вебинар.
+
+Если у вас есть вопросы, пишите @Guzel_Khametova
+
+Отзывы вы можете прочитать тут 
+https://t.me/otzyv_mre"""
+    inline_buttons = {"get_consultation": "Начать"}
 
 
 class SelectAgeCategory(StateProcessorClass):
-    text_message = "Сколько лет Вашему ребенку?"
+    text_message = "Выберите возраст вашего ребёнка"
     inline_buttons = {category.name: category.value for category in AgeCategories}
 
     def business_logic(self):
@@ -102,7 +110,7 @@ class ShowService(StateProcessorClass):
 class WhatIsName(StateProcessorClass):
     text_message = "Как Вас зовут?"
 
-    invalid_message = 'Чтобы записаться нажмите на кнопку"записаться", чтобы вернуться в начало нажмите /menu'
+    invalid_message = 'Чтобы записаться нажмите на кнопку "записаться", чтобы вернуться в начало нажмите /menu'
 
     def is_valid(self):
         pattern = r"^appoint__[1-9]\d*$"

@@ -260,7 +260,7 @@ class SendingStatistics(StateProcessorClass):
                 {
                     "Алиас": appointment.username,
                     "Имя": appointment.client_name,
-                    "Услуга": "Удаленная услуша" if appointment.service is None else appointment.service.name,
+                    "Услуга": "Удаленная услуга" if appointment.service is None else appointment.service.name,
                     "Описание проблемы": appointment.problem_description,
                     "Запрос": appointment.request,
                     "Номер телефона": appointment.phone_number,
