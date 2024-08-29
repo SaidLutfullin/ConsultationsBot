@@ -172,7 +172,7 @@ class StateProcessorClass:
             next_state = f"{self.dialog_name}__{self.next_state[1:]}"
         else:
             next_state = self.next_state
-        User.set_state(self.user.id, next_state)
+        User.set_state(self.user.id, next_state, self.user.username)
 
     def set_context(self, context):
         context_json = json.dumps(context)

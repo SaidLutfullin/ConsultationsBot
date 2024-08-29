@@ -17,6 +17,7 @@ Session = sessionmaker(bind=engine)
 
 
 class Menu(StateProcessorClass):
+    SCREEN_NAME = "Главное меню"
     text_message = """Здравствуйте!
 Вы присоединились к боту помощнику Гузель Хаметовой.
 
@@ -30,6 +31,7 @@ https://t.me/otzyv_mre"""
 
 
 class SelectAgeCategory(StateProcessorClass):
+    SCREEN_NAME = "Выбор возраста ребенка"
     text_message = "Выберите возраст вашего ребёнка"
     inline_buttons = {category.name: category.value for category in AgeCategories}
 
@@ -41,6 +43,7 @@ class SelectAgeCategory(StateProcessorClass):
 
 
 class SelectService(StateProcessorClass):
+    SCREEN_NAME = "Выбор проблемы"
     text_message = "Выберите проблему"
 
     invalid_message = "Похоже, вы не выбрали возрастную категорию. Пожалуйста выберите."
@@ -69,7 +72,7 @@ class SelectService(StateProcessorClass):
 
 
 class ShowService(StateProcessorClass):
-
+    SCREEN_NAME = "Описание услуги"
     invalid_message = "Ошибка. Пожалуйста, выберите проблему."
 
     def is_valid(self):
@@ -108,6 +111,7 @@ class ShowService(StateProcessorClass):
 
 
 class WhatIsName(StateProcessorClass):
+    SCREEN_NAME = "Ожидание имени"
     text_message = "Как Вас зовут?"
 
     invalid_message = 'Чтобы записаться нажмите на кнопку "записаться", чтобы вернуться в начало нажмите /menu'
@@ -124,6 +128,7 @@ class WhatIsName(StateProcessorClass):
 
 
 class DescribeProblem(StateProcessorClass):
+    SCREEN_NAME = "Описание проблемы"
     text_message = "Опишите Вашу проблему"
 
     invalid_message = "Ошибка. Пожалуйста, введите Ваше имя."
@@ -140,6 +145,7 @@ class DescribeProblem(StateProcessorClass):
 
 
 class DescribeRequest(StateProcessorClass):
+    SCREEN_NAME = "Описание запроса"
     text_message = "Опишите Ваш запрос. Каких результатов Вы хотели бы достичь?"
 
     invalid_message = "Ошибка. Пожалуйста, введите описание проблемы."
@@ -156,6 +162,7 @@ class DescribeRequest(StateProcessorClass):
 
 
 class SetPhoneNumber(StateProcessorClass):
+    SCREEN_NAME = "Ожидание номера телефона"
     text_message = "Напишите Ваш номер телефона"
 
     invalid_message = "Ошибка. Пожалуйста, опишите Ваш запрос."
@@ -172,6 +179,7 @@ class SetPhoneNumber(StateProcessorClass):
 
 
 class Agreement(StateProcessorClass):
+    SCREEN_NAME = "Описание согласия"
     text_message = "Я согласен(сна), что результат может быть достигнут только если соблюдать все рекомендации"
 
     inline_buttons = {"agree": "Согласен(сна)"}
@@ -190,6 +198,7 @@ class Agreement(StateProcessorClass):
 
 
 class Appoint(StateProcessorClass):
+    SCREEN_NAME = "Заявка принята"
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.next_state = "@menu"

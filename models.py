@@ -48,6 +48,8 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, nullable=False)
     state = Column(String, nullable=False)
+    previous_state = Column(String)
+    username = Column(String, nullable=False)
 
     @staticmethod
     def create_user(user_id):
@@ -101,14 +103,16 @@ class User(Base):
             logger.error(e)
 
     @staticmethod
-    def set_state(user_id, state):
+    def set_state(user_id, state, username):
         try:
             engine = create_engine(BASE_NAME, echo=True)
             Session = sessionmaker(bind=engine)
             session = Session()
 
             user = session.query(User).filter_by(user_id=user_id).first()
+            user.previous_state = user.state
             user.state = state
+            user.username = username
             session.commit()
         except Exception as e:
             logger.error(e)

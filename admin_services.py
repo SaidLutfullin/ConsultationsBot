@@ -10,7 +10,8 @@ from sqlalchemy.orm import sessionmaker
 from config import BASE_NAME, LOGFILE
 from dialog_classes import (DialogClass, StateProcessorClass,
                             ValidationException)
-from models import AgeCategories, Appointment, Service
+from models import AgeCategories, Appointment, Service, User
+from user_services import UserServices
 
 logger.add(LOGFILE, format="{time} {level} {message}", level="ERROR", rotation="400KB", compression="zip")
 
@@ -36,6 +37,7 @@ class MyServices(StateProcessorClass):
             session.close()
             buttons["new_service"] = "Добавить новую"
             buttons["get_statistics"] = "Выгрузить список заявок"
+            buttons["get_user_statistics"] = "Статистика пользователей"
             return buttons
         except Exception as e:
             logger.error(e)
@@ -441,12 +443,53 @@ class NewWaitingForLink(WaitingForLink):
             self.text_message = "Ошибка сохранения услуги"
 
 
+class GetUserStatistics(StateProcessorClass):
+    redirect_class = MyServices
+    redirect_next_state = "@my_services"
+    text_message = "Теперь вы можете скачать документ."
+
+    def business_logic(self):
+        session = Session()
+        try:
+            users = (
+                session.query(User)
+                .all()
+            )
+            data = []
+            for user in users:
+                state = user.previous_state.split("__")
+                if len(state) < 2:
+                    continue
+                if state[0] == "admin_services":
+                    step = "Админ меню"
+                else:
+                    step = UserServices.states[state[1]].SCREEN_NAME
+                data.append({
+                        "Алиас": user.username,
+                        "ID": user.user_id,
+                        "Текущий шаг": step,
+                    })
+            session.close()
+
+            df = pd.DataFrame(data)
+            excel_buffer = BytesIO()
+            with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False)
+            excel_buffer.seek(0)
+            excel_buffer.name = "Статистика пользователей.xlsx"
+            self.document = excel_buffer
+        except Exception as e:
+            logger.error(e)
+            self.invalid_message = "Ошибка создания документа"
+
+
 class AdminServices(DialogClass):
     states = {
         "my_services": MyServices,
         "my_services_waiting_callback": {
             "new_service": SetNameService,
             "get_statistics": GetStatistics,
+            "get_user_statistics": GetUserStatistics,
             "": SelectService,
         },
         "set_description": SetDescription,
