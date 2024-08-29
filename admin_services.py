@@ -457,6 +457,8 @@ class GetUserStatistics(StateProcessorClass):
             )
             data = []
             for user in users:
+                if user.previous_state is None:
+                    continue
                 state = user.previous_state.split("__")
                 if len(state) < 2:
                     continue
