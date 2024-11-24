@@ -35,6 +35,18 @@ class SelectAgeCategory(StateProcessorClass):
     text_message = "Выберите возраст вашего ребёнка"
     inline_buttons = {category.name: category.value for category in AgeCategories}
 
+    def get_inline_buttons(self):
+        return self.inline_buttons | {
+            1: {
+                "text":'Вебинары',
+                "url":'https://t.me/vebinarmre'
+            },
+            2: {
+                "text": 'Руководство по прикорму "Мой ребенок ест"',
+                "url": 'https://clickcontent.ru/p/c1619081-8289-45d1-af4e-67fae45a9f88'
+            }
+        }
+
     def business_logic(self):
         if self.callback != "get_consultation":
             self.text_message = Menu.text_message
